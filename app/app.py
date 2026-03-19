@@ -1,0 +1,447 @@
+import streamlit as st
+import pandas as pd
+import joblib
+
+# Page configuration
+st.set_page_config(page_title="Preditor de Risco de Obesidade", layout="wide")
+
+# Load the saved pipeline
+import os
+@st.cache_resource
+def load_model():
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(script_dir, 'model_pipeline.pkl')
+    return joblib.load(model_path)
+
+model = load_model()
+
+# Header
+st.title("🏥 Sistema de Avaliação de Risco de Obesidade")
+st.markdown("""
+Esta ferramenta utiliza um modelo de Machine Learning para auxiliar profissionais de saúde na identificação 
+de níveis de risco de obesidade baseado em dados físicos e hábitos de vida.
+""")
+
+st.divider()
+
+# Variable Descriptions
+with st.expander("ℹ️ Descrição das Variáveis - Dicionário de Dados"):
+    st.markdown("""
+    ### 👤 Dados Pessoais
+    - **Gender**: Sexo do paciente (Feminino/Masculino)
+    - **Age**: Idade do paciente em anos
+    - **Height**: Altura do paciente em metros
+    - **Weight**: Peso do paciente em quilogramas
+    - **family_history**: Histórico familiar de sobrepeso (yes/no)
+    
+    ### 🥗 Eating Habits (Hábitos Alimentares)
+    - **FAVC** (Frequent consumption of high-calorie food): Consumo frequente de alimentos com alto teor calórico (yes/no)
+    - **FCVC** (Frequency of Consumption of Vegetables): Frequência de consumo de vegetais nas refeições (escala 1-3)
+      - 1 = Nunca
+      - 2 = Às vezes
+      - 3 = Sempre
+    - **NCP** (Number of main meals): Número de refeições principais por dia (1-4)
+    - **CAEC** (Consumption of food between meals): Consumo de alimentos entre as refeições
+      - no = Não
+      - Sometimes = Às vezes
+      - Frequently = Frequentemente
+      - Always = Sempre
+    - **CH2O** (Consumption of water daily): Consumo diário de água em litros (escala 1-3)
+      - 1 = Menos de 1L
+      - 2 = 1-2L
+      - 3 = Mais de 2L
+    - **SCC** (Calories consumption monitoring): Monitora o consumo de calorias diariamente? (yes/no)
+    
+    ### 🏃 Lifestyle & Transport (Estilo de Vida e Transporte)
+    - **FAF** (Physical activity frequency): Frequência de atividade física por semana (escala 0-3)
+      - 0 = Nenhuma
+      - 1 = 1-2 dias
+      - 2 = 2-4 dias
+      - 3 = 4-5 dias
+    - **TUE** (Time using technology devices): Tempo de uso de dispositivos eletrônicos por dia (escala 0-2)
+      - 0 = 0-2 horas
+      - 1 = 3-5 horas
+      - 2 = Mais de 5 horas
+    - **SMOKE**: Fumante? (yes/no)
+    - **CALC** (Consumption of alcohol): Consumo de álcool
+      - no = Não
+      - Sometimes = Às vezes
+      - Frequently = Frequentemente
+      - Always = Sempre
+    - **MTRANS** (Transportation used): Meio de transporte principal utilizado
+      - Public_Transportation = Transporte público
+      - Automobile = Automóvel
+      - Motorbike = Motocicleta
+      - Bike = Bicicleta
+      - Walking = Caminhada
+    
+    ### 🎯 Target Variable (Variável Alvo)
+    - **Obesity**: Nível de obesidade classificado em 7 categorias:
+      - Insufficient_Weight = Peso insuficiente
+      - Normal_Weight = Peso normal
+      - Overweight_Level_I = Sobrepeso Nível I
+      - Overweight_Level_II = Sobrepeso Nível II
+      - Obesity_Type_I = Obesidade Tipo I
+      - Obesity_Type_II = Obesidade Tipo II
+      - Obesity_Type_III = Obesidade Tipo III
+    """)
+
+st.divider()
+
+# Creating columns for the layout
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.header("👤 Dados Pessoais")
+    gender = st.selectbox("Sexo", ["Female", "Male"], format_func=lambda x: "Feminino" if x == "Female" else "Masculino")
+    age = st.number_input("Idade", min_value=1, max_value=120, value=25)
+    height = st.number_input("Altura (m)", min_value=1.0, max_value=2.5, value=1.70, step=0.01)
+    weight = st.number_input("Peso (kg)", min_value=10.0, max_value=300.0, value=70.0, step=0.1)
+    family_history = st.selectbox("Histórico Familiar de Sobrepeso?", ["yes", "no"], format_func=lambda x: "Sim" if x == "yes" else "Não")
+
+with col2:
+    st.header("🥗 Hábitos Alimentares")
+    favc = st.selectbox("Consumo frequente de comida calórica?", ["yes", "no"], format_func=lambda x: "Sim" if x == "yes" else "Não")
+    fcvc = st.slider("Frequência de consumo de vegetais (1-3)", 1, 3, 2)
+    ncp = st.slider("Número de refeições principais (1-4)", 1, 4, 3)
+    caec = st.selectbox("Consumo de alimentos entre refeições", ["no", "Sometimes", "Frequently", "Always"], 
+                       format_func=lambda x: {"no": "Não", "Sometimes": "Às vezes", "Frequently": "Frequentemente", "Always": "Sempre"}[x])
+    ch2o = st.slider("Consumo diário de água (1-3)", 1, 3, 2)
+    scc = st.selectbox("Monitora calorias diariamente?", ["yes", "no"], format_func=lambda x: "Sim" if x == "yes" else "Não")
+
+with col3:
+    st.header("🏃 Estilo de Vida e Transporte")
+    faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
+    tue = st.slider("Tempo usando dispositivos eletrônicos (0-2)", 0, 2, 1)
+    smoke = st.selectbox("Fumante?", ["yes", "no"], format_func=lambda x: "Sim" if x == "yes" else "Não")
+    calc = st.selectbox("Consumo de álcool", ["no", "Sometimes", "Frequently", "Always"],
+                       format_func=lambda x: {"no": "Não", "Sometimes": "Às vezes", "Frequently": "Frequentemente", "Always": "Sempre"}[x])
+    mtrans = st.selectbox("Principal meio de transporte", 
+                          ["Public_Transportation", "Automobile", "Motorbike", "Bike", "Walking"],
+                          format_func=lambda x: {"Public_Transportation": "Transporte Público", "Automobile": "Automóvel", 
+                                                 "Motorbike": "Motocicleta", "Bike": "Bicicleta", "Walking": "Caminhada"}[x])
+
+# Prediction Logic
+st.divider()
+if st.button("🔍 Avaliar Estado de Saúde", type="primary", use_container_width=True):
+    # Create a dictionary with the inputs
+    input_data = {
+        'Gender': gender, 'Age': age, 'Height': height, 'Weight': weight,
+        'family_history': family_history, 'FAVC': favc, 'FCVC': fcvc,
+        'NCP': ncp, 'CAEC': caec, 'SMOKE': smoke, 'CH2O': ch2o,
+        'SCC': scc, 'FAF': faf, 'TUE': tue, 'CALC': calc, 'MTRANS': mtrans
+    }
+    
+    # Convert to DataFrame
+    input_df = pd.DataFrame([input_data])
+    
+    # Get prediction
+    prediction = model.predict(input_df)[0]
+    
+    # Calculate BMI
+    bmi = weight / (height ** 2)
+    
+    # Display Results with enhanced visualization
+    st.divider()
+    st.header("📊 Resultados da Avaliação de Saúde")
+    
+    # Create two columns for metrics
+    metric_col1, metric_col2, metric_col3 = st.columns(3)
+    
+    with metric_col1:
+        st.metric(label="📏 IMC Calculado", value=f"{bmi:.1f}")
+    
+    with metric_col2:
+        st.metric(label="⚖️ Peso", value=f"{weight} kg")
+    
+    with metric_col3:
+        st.metric(label="📐 Altura", value=f"{height} m")
+    
+    st.divider()
+    
+    # Main result display with color coding
+    model_prediction_key = prediction
+
+    # BMI-based sanity check to avoid unrealistic outputs
+    if bmi < 18.5:
+        bmi_prediction_key = "Insufficient_Weight"
+    elif bmi < 25:
+        bmi_prediction_key = "Normal_Weight"
+    elif bmi < 27.5:
+        bmi_prediction_key = "Overweight_Level_I"
+    elif bmi < 30:
+        bmi_prediction_key = "Overweight_Level_II"
+    elif bmi < 35:
+        bmi_prediction_key = "Obesity_Type_I"
+    elif bmi < 40:
+        bmi_prediction_key = "Obesity_Type_II"
+    else:
+        bmi_prediction_key = "Obesity_Type_III"
+
+    severity_order = {
+        "Insufficient_Weight": 0,
+        "Normal_Weight": 1,
+        "Overweight_Level_I": 2,
+        "Overweight_Level_II": 3,
+        "Obesity_Type_I": 4,
+        "Obesity_Type_II": 5,
+        "Obesity_Type_III": 6,
+    }
+
+    model_severity = severity_order.get(model_prediction_key, 1)
+    bmi_severity = severity_order.get(bmi_prediction_key, 1)
+
+    final_prediction_key = model_prediction_key
+    if bmi_severity > model_severity:
+        final_prediction_key = bmi_prediction_key
+        st.info("⚠️ O resultado foi ajustado com base no IMC para evitar inconsistências em valores extremos.")
+
+    result_display = final_prediction_key.replace("_", " ").title()
+    
+    # Define status levels and recommendations
+    status_config = {
+        "Insufficient Weight": {
+            "emoji": "⚠️",
+            "color": "#87CEEB",
+            "message": "Peso Insuficiente",
+            "recommendation": "• Consulte um nutricionista para plano alimentar adequado\n• Avalie possíveis deficiências nutricionais\n• Considere suplementação se necessário",
+            "position": 0
+        },
+        "Normal Weight": {
+            "emoji": "✅",
+            "color": "#28a745",
+            "message": "Peso Normal - Parabéns!",
+            "recommendation": "• Mantenha hábitos alimentares saudáveis\n• Continue praticando atividades físicas regulares\n• Realize check-ups preventivos anuais",
+            "position": 1
+        },
+        "Overweight Level I": {
+            "emoji": "⚡",
+            "color": "#ffc107",
+            "message": "Sobrepeso Nível I",
+            "recommendation": "• Inicie ou intensifique atividade física (150 min/semana)\n• Ajuste padrão alimentar reduzindo calorias\n• Acompanhamento nutricional é recomendado",
+            "position": 2
+        },
+        "Overweight Level Ii": {
+            "emoji": "⚡",
+            "color": "#ff9800",
+            "message": "Sobrepeso Nível II",
+            "recommendation": "• Consulte médico e nutricionista urgentemente\n• Estabeleça meta de redução de peso gradual\n• Atividade física supervisionada é importante",
+            "position": 3
+        },
+        "Obesity Type I": {
+            "emoji": "🔴",
+            "color": "#ff5722",
+            "message": "Obesidade Tipo I",
+            "recommendation": "• Acompanhamento médico multiprofissional necessário\n• Avalie riscos cardiovasculares e metabólicos\n• Plano estruturado de perda de peso com metas\n• Considere apoio psicológico",
+            "position": 4
+        },
+        "Obesity Type Ii": {
+            "emoji": "🔴",
+            "color": "#e53935",
+            "message": "Obesidade Tipo II",
+            "recommendation": "• Tratamento médico intensivo é essencial\n• Avaliação de comorbidades (diabetes, hipertensão)\n• Considere tratamento farmacológico\n• Suporte multidisciplinar completo",
+            "position": 5
+        },
+        "Obesity Type Iii": {
+            "emoji": "🚨",
+            "color": "#b71c1c",
+            "message": "Obesidade Tipo III (Mórbida)",
+            "recommendation": "• Procure atendimento médico especializado IMEDIATAMENTE\n• Avaliação para cirurgia bariátrica pode ser necessária\n• Monitoramento rigoroso de comorbidades\n• Suporte psicológico e nutricional intensivo",
+            "position": 6
+        }
+    }
+    
+    # Get configuration for current prediction
+    config = status_config.get(result_display, status_config["Normal Weight"])
+    
+    # Visual Ruler Scale
+    st.markdown("### 📊 Classificação do Estado de Saúde")
+    
+    # Define categories in order
+    categories = [
+        ("Insufficient Weight", "Peso Insuficiente", "#87CEEB", 0),
+        ("Normal Weight", "Peso Normal", "#28a745", 1),
+        ("Overweight Level I", "Sobrepeso Nível I", "#ffc107", 2),
+        ("Overweight Level Ii", "Sobrepeso Nível II", "#ff9800", 3),
+        ("Obesity Type I", "Obesidade Tipo I", "#ff5722", 4),
+        ("Obesity Type Ii", "Obesidade Tipo II", "#e53935", 5),
+        ("Obesity Type Iii", "Obesidade Tipo III", "#b71c1c", 6)
+    ]
+    
+    # Find current position
+    current_position = 1  # default
+    for cat_key, cat_label, cat_color, pos in categories:
+        if cat_key == result_display:
+            current_position = pos
+            break
+    
+    # Calculate arrow position (percentage)
+    arrow_position = (current_position / 6) * 100 + (100 / 14)  # Center of segment
+    
+    # Create the visual ruler with arrow
+    ruler_html = f"""
+    <style>
+    .health-scale-container {{
+        position: relative;
+        width: 100%;
+        margin: 30px 0;
+        padding-top: 60px;
+    }}
+    .arrow-indicator {{
+        position: absolute;
+        top: 0;
+        left: {arrow_position}%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 100;
+        animation: bounce 1.5s ease-in-out infinite;
+    }}
+    @keyframes bounce {{
+        0%, 100% {{ transform: translateX(-50%) translateY(0); }}
+        50% {{ transform: translateX(-50%) translateY(-8px); }}
+    }}
+    .arrow-text {{
+        font-size: 13px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+        background: white;
+        padding: 5px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        white-space: nowrap;
+    }}
+    .arrow {{
+        font-size: 35px;
+        line-height: 0.8;
+        color: {config['color']};
+        filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));
+    }}
+    .health-ruler {{
+        display: flex;
+        width: 100%;
+        height: 70px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        position: relative;
+        z-index: 1;
+    }}
+    .ruler-segment {{
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+        border-right: 2px solid rgba(255,255,255,0.3);
+        padding: 8px 4px;
+        position: relative;
+        transition: all 0.3s ease;
+    }}
+    .ruler-segment:last-child {{
+        border-right: none;
+    }}
+    .ruler-segment.active {{
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+    }}
+    .result-box {{
+        text-align: center;
+        font-size: 28px;
+        margin-top: 25px;
+        padding: 15px;
+        font-weight: bold;
+        color: {config['color']};
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,240,240,0.9));
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 3px solid {config['color']};
+    }}
+    </style>
+    <div class="health-scale-container">
+        <div class="arrow-indicator">
+            <div class="arrow-text">Você está aqui</div>
+            <div class="arrow">▼</div>
+        </div>
+        <div class="health-ruler">
+    """
+    
+    for cat_key, cat_label, cat_color, pos in categories:
+        active_class = "active" if cat_key == result_display else ""
+        ruler_html += f'<div class="ruler-segment {active_class}" style="background-color: {cat_color};">{cat_label}</div>'
+    
+    ruler_html += f"""
+        </div>
+        <div class="result-box">{config["emoji"]} {config["message"]}</div>
+    </div>
+    """
+    
+    st.components.v1.html(ruler_html, height=250)
+    
+    # Recommendations section
+    st.subheader("💡 Recomendações Médicas")
+    st.markdown(config["recommendation"])
+    
+    # Risk factors summary
+    st.divider()
+    st.subheader("📋 Resumo dos Fatores de Risco")
+    
+    risk_col1, risk_col2 = st.columns(2)
+    
+    with risk_col1:
+        st.markdown("**Fatores Positivos:**")
+        positive_factors = []
+        if faf >= 2:
+            positive_factors.append("✓ Atividade física regular")
+        if fcvc >= 2:
+            positive_factors.append("✓ Bom consumo de vegetais")
+        if ch2o >= 2:
+            positive_factors.append("✓ Boa hidratação")
+        if scc == "yes":
+            positive_factors.append("✓ Monitora calorias")
+        if smoke == "no":
+            positive_factors.append("✓ Não fumante")
+        if mtrans in ["Bike", "Walking"]:
+            positive_factors.append("✓ Transporte ativo")
+        
+        if positive_factors:
+            for factor in positive_factors:
+                st.write(factor)
+        else:
+            st.write("Nenhum fator positivo identificado")
+    
+    with risk_col2:
+        st.markdown("**Fatores de Atenção:**")
+        risk_factors = []
+        if faf == 0:
+            risk_factors.append("⚠ Sedentarismo")
+        if favc == "yes":
+            risk_factors.append("⚠ Alto consumo calórico")
+        if fcvc == 1:
+            risk_factors.append("⚠ Baixo consumo de vegetais")
+        if caec in ["Frequently", "Always"]:
+            risk_factors.append("⚠ Belisca frequentemente")
+        if ch2o == 1:
+            risk_factors.append("⚠ Baixa hidratação")
+        if tue == 2:
+            risk_factors.append("⚠ Muito tempo em telas")
+        if calc in ["Frequently", "Always"]:
+            risk_factors.append("⚠ Alto consumo de álcool")
+        if smoke == "yes":
+            risk_factors.append("⚠ Fumante")
+        
+        if risk_factors:
+            for factor in risk_factors:
+                st.write(factor)
+        else:
+            st.write("Nenhum fator de risco identificado")
+    
+    # Footer note
+    st.divider()
+    st.info("ℹ️ **Nota:** Esta é uma avaliação automatizada para apoio à decisão médica. Sempre consulte um profissional de saúde para diagnóstico e tratamento adequados.")
