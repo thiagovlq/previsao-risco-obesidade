@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
 # 1. Data Loading & Cleaning
-df = pd.read_csv('/content/drive/MyDrive/GitHub/obesity-risk-prediction/data/Obesity.csv')
+df = pd.read_csv('/content/drive/MyDrive/GitHub/previsao-risco-obesidade/data/Obesity.csv')
 
 def preprocess_raw_data(df):
     df_copy = df.copy()
