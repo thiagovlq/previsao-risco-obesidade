@@ -20,7 +20,14 @@ A obesidade é uma condição médica multifatorial. O objetivo desta ferramenta
 * **Principais Variáveis:** Peso, Altura, Monitoramento de Calorias, Frequência de atividade física  
 * **Tipo de Modelo:** Random Forest (100 estimadores)  
 
-## 🚀 Como Executar
+## 🚀 Aplicativo Streamlit e Dashboard Power BI
+
+Acesso o App pelo link abaixo:
+https://previsao-risco-obesidade-thiago-vinicius.streamlit.app/
+
+Acesso o Dash pelo link abaixo:
+https://app.powerbi.com/view?r=eyJrIjoiNGUzMDk4ZjktZmE1MS00YmJlLWJiMGEtMDI0MmFiNjQ2YmY4IiwidCI6IjM3ZDlkN2ZlLWQ4ZWQtNGU2MS05OTNlLWUwMTcxMTlmZTFlZiJ9
+
 
 ### Início Rápido (Recomendado)
 Dê um duplo clique em `run_app.bat` na pasta do GitHub e o app será iniciado automaticamente.
