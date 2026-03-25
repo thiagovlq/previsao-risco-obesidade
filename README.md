@@ -1,4 +1,4 @@
-# Obesity Risk Prediction & Analysis
+# Previsão e análise do risco de obesidade
 
 ## 📌 Visão Geral do Projeto
 Este projeto foi desenvolvido para um ambiente hospitalar com o objetivo de auxiliar equipes médicas na previsão dos níveis de risco de obesidade. Utilizando machine learning, o sistema classifica pacientes com base em sua condição física e hábitos de vida.
