@@ -1,72 +1,68 @@
-# Obesity Risk Prediction & Analysis
+Predição e Análise de Risco de Obesidade
+📌 Visão Geral do Projeto
 
-## 📌 Project Overview
-This project was developed for a hospital environment to assist medical teams in predicting obesity risk levels. Using machine learning, the system classifies patients based on their physical condition and lifestyle habits.
+Este projeto foi desenvolvido para um ambiente hospitalar com o objetivo de auxiliar equipes médicas na previsão dos níveis de risco de obesidade. Utilizando técnicas de Machine Learning, o sistema classifica pacientes com base em suas condições físicas e hábitos de vida.
 
-## 📊 Business Context
-Obesity is a multifactorial medical condition. The goal of this tool is to provide a data-driven approach for early diagnosis and personalized health recommendations.
+📊 Contexto de Negócio
 
-## 🛠️ Technical Stack
-* **Language:** Python 3.13
-* **Data Analysis:** Pandas, NumPy, Matplotlib/Seaborn
-* **Machine Learning:** Scikit-Learn (Random Forest Classifier)
-* **Deployment:** Streamlit
-* **Model Serialization:** Joblib
+A obesidade é uma condição médica multifatorial. O objetivo desta ferramenta é fornecer uma abordagem orientada a dados (data-driven) para diagnóstico precoce e recomendações de saúde personalizadas.
 
-## 📈 Key Results
-* **Model Accuracy:** 91.80% ✅
-* **Dataset:** 2,111 obesity records from UCI dataset
-* **Classification Categories:** 7 obesity levels (Insufficient Weight to Obesity Type III)
-* **Best Performing Features:** Weight, Height, Calorie monitoring, Physical activity frequency
-* **Model Type:** Random Forest (100 estimators)
+🛠️ Tecnologias Utilizadas
+Linguagem: Python 3.13
+Análise de Dados: Pandas, NumPy, Matplotlib/Seaborn
+Machine Learning: Scikit-Learn (Random Forest Classifier)
+Deploy: Streamlit
+Serialização do Modelo: Joblib
+📈 Principais Resultados
+Acurácia do Modelo: 91,80% ✅
+Base de Dados: 2.111 registros de obesidade (dataset UCI)
+Categorias de Classificação: 7 níveis de obesidade (de Peso Insuficiente até Obesidade Tipo III)
+Principais Variáveis: Peso, Altura, Monitoramento de Calorias, Frequência de Atividade Física
+Modelo Utilizado: Random Forest (100 estimadores)
+🚀 Como Executar
+Início Rápido (Recomendado)
 
-## 🚀 How to Run
+Dê um duplo clique no arquivo run_app.bat na pasta do GitHub e a aplicação será iniciada automaticamente.
 
-### Quick Start (Recommended)
-Double-click `run_app.bat` in the GitHub folder and the app will launch automatically.
-
-### Manual Setup
-```bash
-# 1. Create virtual environment
+Execução Manual
+# 1. Criar ambiente virtual
 python -m venv venv
 
-# 2. Activate it
-venv\Scripts\Activate
+# 2. Ativar o ambiente
+venv\Scripts\activate
 
-# 3. Install dependencies
+# 3. Instalar dependências
 pip install -r requirements.txt
 
-# 4. Navigate to project
+# 4. Acessar o diretório do projeto
 cd obesity-risk-prediction
 
-# 5. Train the model
+# 5. Treinar o modelo
 python app/train.py
 
-# 6. Run the app
+# 6. Executar a aplicação
 python -m streamlit run app/app.py
-```
 
-The app will be available at `http://localhost:8501`
+A aplicação estará disponível em: http://localhost:8501
 
-## 📁 Project Structure
-```
+📁 Estrutura do Projeto
 obesity-risk-prediction/
 ├── app/
-│   ├── app.py                    # Streamlit web application
-│   ├── train.py                  # Model training script
-│   └── model_pipeline.pkl        # Trained ML model
+│   ├── app.py                    # Aplicação web em Streamlit
+│   ├── train.py                  # Script de treinamento do modelo
+│   └── model_pipeline.pkl        # Modelo de ML treinado
 ├── data/
-│   ├── Obesity.csv               # Original dataset
-│   └── processed_obesity.csv     # Processed dataset
+│   ├── Obesity.csv               # Base de dados original
+│   └── processed_obesity.csv     # Base tratada
 ├── notebook/
-│   └── model_pipeline.ipynb      # Jupyter notebook with analysis
-└── requirements.txt              # Python dependencies
-```
+│   └── model_pipeline.ipynb      # Notebook com análises
+└── requirements.txt              # Dependências do projeto
+🔧 Dependências
 
-## 🔧 Dependencies
-See `requirements.txt` for the full list. Key packages:
-- scikit-learn==1.6.1
-- streamlit>=1.53.0
-- pandas>=1.4.0
-- numpy>=1.23
-- matplotlib & seaborn for visualization
+Veja o arquivo requirements.txt para a lista completa. Principais pacotes:
+
+scikit-learn==1.6.1
+streamlit>=1.53.0
+pandas>=1.4.0
+numpy>=1.23
+matplotlib e seaborn para visualização
